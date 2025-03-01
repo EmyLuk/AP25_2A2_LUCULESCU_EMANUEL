@@ -166,7 +166,8 @@ public class homework {
                 if (isClique) {
                     candidat[nivel] = i;
                     if (gaseste_clique(i + 1, nivel + 1, candidat)) {
-                        return true; // Dacă am găsit un clique, nu mai continuăm
+                        return true; 
+                        
                     }
                 }
             }
