@@ -186,6 +186,8 @@ class Teacher extends Person {
     }
 }
 
+
+
 /**
  * Problema de alocare a proiectelor catre studenti
  */
@@ -198,6 +200,7 @@ class Problem {
 
     /**
      * Constructor pentru clasa Problem
+     *
      * @param maxStudents nr maxim de studenti
      * @param maxTeachers nr maxim de prof
      */
@@ -209,12 +212,13 @@ class Problem {
 
     /**
      * Adaug studentul in instanta problemei
+     *
      * @param student
      */
 
     public void addStudent(Student student) {
         for (int i = 0; i < studentCount; i++) {
-            if (students[i].equals(student)) return; /// se evita duplicate
+            if (students[i].equals(student)) return; /// sa nu adaug de doua ori acelasi student
         }
         if (studentCount < students.length) {
             students[studentCount++] = student;
@@ -223,12 +227,13 @@ class Problem {
 
     /**
      * Adaug profesorul la fel
+     *
      * @param teacher
      */
 
     public void addTeacher(Teacher teacher) {
         for (int i = 0; i < teacherCount; i++) {
-            if (teachers[i].equals(teacher)) return; ///se evita duplicate
+            if (teachers[i].equals(teacher)) return; ///sa nu adaug de doua ori acelasi profesor
         }
         if (teacherCount < teachers.length) {
             teachers[teacherCount++] = teacher;
@@ -238,30 +243,55 @@ class Problem {
     /**
      * Cu ajutorul alg Greedy se aloca proiectele studentilor
      */
-    public void proiecteAlocate(){
+    public void proiecteAlocate() {
         for (int i = 0; i < studentCount; i++) { /// parcurgem fiecare student
-                if(students[i]==null){
+            if (students[i] == null) {
+                continue;
+            }
+            for (int j = 0; j < teacherCount; j++) {/// parcurgem fiecare profesor
+                if (students[j] == null) {
                     continue;
                 }
-                for(int j=0;j<teacherCount;j++){/// parcurgem fiecare profesor
-                    if(students[j]==null){
-                        continue;
-                    }
-                    Project[] projects = teachers[j].getProjects();
-                    for(int k=0;k<projects.length;k++){ ///  parcurgem fiecare proiect al profesorului
-                        if(!projects[k].esteAlocat()){
-                            students[i].setProiectAlocat(projects[k]);
-                            projects[k].alocat();
-                            break;
-                        }
-                    }
-                    if(students[i].getProiectAlocat()!=null){
-                        break; ///daca studentul are un proiect deja alocat, iesim
+                Project[] projects = teachers[j].getProjects();
+                for (int k = 0; k < projects.length; k++) { ///  parcurgem fiecare proiect al profesorului
+                    if (!projects[k].esteAlocat()) {
+                        students[i].setProiectAlocat(projects[k]);
+                        projects[k].alocat();
+                        break;
                     }
                 }
+                if (students[i].getProiectAlocat() != null) {
+                    break; ///daca studentul are un proiect deja alocat, iesim
+                }
+            }
         }
     }
 
+    /**
+     * Verifica daca se poate realiza o potrivire perfecta intre studenti si proiecte, conform teoremei lui Hall.
+     * @return true daca potrivirea perfecta este posibila, false altfel.
+     */
+
+    public boolean verificarePotrivire() {
+        int totalProjects = 0;
+        for (int j = 0; j < teacherCount; j++) {
+            totalProjects += teachers[j].getProjects().length;
+        }
+        Bonus bonus = new Bonus(studentCount, totalProjects);
+        int projectIndex = 0;
+        for (int j = 0; j < teacherCount; j++) {
+            Project[] projects = teachers[j].getProjects();
+            for (int k = 0; k < projects.length; k++) {
+                if (projectIndex >= totalProjects) break;
+
+                for (int i = 0; i < studentCount; i++) {
+                    bonus.adaugaMuchie(i, projectIndex);
+                }
+                projectIndex++;
+            }
+        }
+        return bonus.verificarePotrivire();
+    }
 
 }
 
@@ -278,6 +308,7 @@ public class Main {
         var s4 = new Student("Anca", "1979-01-07", 104);
         var s5 = new Student("Paul", "1978-12-21", 105);
         var s6 = new Student("Mihai", "1979-02-22", 106);
+
         problem.addStudent(s1);
         problem.addStudent(s2);
         problem.addStudent(s3);
@@ -285,9 +316,9 @@ public class Main {
         problem.addStudent(s5);
         problem.addStudent(s6);
 
-        var t1 = new Teacher("Dr. Alex", "1975-04-20", 5);
-        var t2 = new Teacher("Dr. Irimia", "1980-09-30", 4);
-        var t3 = new Teacher("Dr. Ion", "1980-09-30", 1);
+        var t1 = new Teacher("Dr. Alex", "1975-04-20", 2);
+        var t2 = new Teacher("Dr. Irimia", "1980-09-30", 3);
+        var t3 = new Teacher("Dr. Ion", "1980-09-30", 2);
         problem.addTeacher(t1);
         problem.addTeacher(t2);
         problem.addTeacher(t3);
@@ -298,22 +329,34 @@ public class Main {
         var p4 = new Project("Sisteme de operare", Project.proiectTip.teoretic);
         var p5 = new Project("OOP", Project.proiectTip.practic);
         var p6 = new Project("Web", Project.proiectTip.practic);
+        var p7 = new Project("Matematica", Project.proiectTip.practic);
 
         t1.addProject(p1);
-        t1.addProject(p2);
-        t2.addProject(p3);
+        t2.addProject(p2);
+        t3.addProject(p3);
         t2.addProject(p4);
         t2.addProject(p5);
         t3.addProject(p6);
-
-
-        problem.proiecteAlocate();
-
-        System.out.println("\nAlocarea proiectelor:");
-        for (Student student : new Student[]{s1, s2, s3,s4,s5,s6}) {
-            String projectName = (student.getProiectAlocat() != null) ? student.getProiectAlocat().getTitle() : "Fara proiect";
-            System.out.println(student.getName() + " -> " + projectName);
-        }
+        t1.addProject(p7);
+        long startTime = System.nanoTime();
+        boolean feasible = problem.verificarePotrivire();
+        long endTime = System.nanoTime();
+        System.out.println("Se poate face o potrivire perfecta? " + (feasible ? "True" : "False"));
+        System.out.println("Timp de executie: " + (endTime - startTime) / 1_000_000 + " ms");
+        Runtime runtime = Runtime.getRuntime();
+        System.out.println("Memorie utilizata: " + (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024) + " MB");
+//        problem.proiecteAlocate();
+//
+//        System.out.println("\nAlocarea proiectelor:");
+//        for (Student student : new Student[]{s1, s2, s3, s4, s5, s6}) {
+//            if (student.getProiectAlocat() != null) {
+//                System.out.println(student.getName() + " -> " +
+//                        student.getProiectAlocat().getTitle() + ", " +
+//                        student.getProiectAlocat().getTip());
+//            } else {
+//                System.out.println(student.getName() + " -> Fara proiect");
+//            }
+//        }
 
     }
 }
