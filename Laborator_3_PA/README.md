@@ -13,4 +13,16 @@ In ce consta implementarea? Homework:-> clasa Flight reprezinta un zbor care con
                                      -> Metoda: scheduleFlights(Airport airport, List<Flight> flights): asociaza fiecare zbor unei piste
                                                  disponibile, evitand suprapunerile. (doua avioane nu au cum sa aterizeze pe aceasi 
                                                  pista in intervale ce se suprapun).
+Am adaugat si partea pentru bonus, Bonus.java.
+Aceasta clasa ofera un alg pentru programarea din punct de vedere echitabil al zborurilor pe pistele unui aeroport. ( diferenta de cel putin 1 intre piste).
+Cum functioneazaa? -> sortez zborurile dupa ora de aterizare
+                   -> incerc sa aloc fiecare zbor pe pista cu cele mai putine zboruri
+                   -> Daca nu incape, incerc sa intarzii zborul cu pana la 30 de min intarziere (in pasi de 5 min).
+Metoda folosita:
+public static void equitableScheduleWithDelays(List<Flight> flights, Airport airport)
+ 
+
+
+
+
                                                     
